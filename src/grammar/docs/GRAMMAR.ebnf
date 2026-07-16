@@ -1,0 +1,110 @@
+(* Clases *)
+classdecl = CLASS IDENTIFIER (EXTENDS IDENTIFIER)? LBRACE decl* RBRACE;
+decl = vardecl | methdecl | constrdecl;
+vardecl = type IDENTIFIER (EQUALS expr)? SEMICOLON;
+methdecl = rettype methname LPAREN paramList? RPAREN LBRACE statements RBRACE;
+constrdecl = IDENTIFIER LPAREN paramList? RPAREN LBRACE statements RBRACE;
+
+(* Statements *)
+statements = statement*;
+
+statement = vardecl 
+    | jump SEMICOLON
+    | for
+    | foreach
+    | while
+    | dowhile
+    | if
+    | try
+    | expr SEMICOLON
+    | block;
+
+block = LBRACE statements RBRACE;
+(* TODO: Look into "no short if" to deal with dangling else ambiguity*)
+if = IF LPAREN expr RPAREN statement (ELSE statement)?;
+for = FOR LPAREN (type IDENTIFIER EQUALS expr)? SEMICOLON expr? SEMICOLON expr? RPAREN statement;
+foreach = FOREACH LPAREN type IDENTIFIER IN expr RPAREN statement;
+while = WHILE LPAREN expr RPAREN statement;
+dowhile = DO statement WHILE LPAREN expr RPAREN SEMICOLON;
+loop = LOOP (LPAREN expr? RPAREN)? statement;
+switch = SWITCH LPAREN expr RPAREN LBRACE switchCase* RBRACE;
+switchCase = switchLabel statement?;
+switchLabel = CASE expr COLON | DEFAULT COLON;
+
+jump = CONTINUE
+    | BREAK
+    | RETURN expr?
+    | THROW;
+
+try = TRY block catches? finally?;
+catches = catchClause (catches)?;
+catchClause = CATCH LPAREN param RPAREN block;
+finally = FINALLY block;
+
+(* expressions *)
+expr = tertiary ((EQUALS 
+    | PLUS_EQUALS 
+    | MINUS_EQUALS 
+    | MULTIPLY_EQUALS 
+    | DIVIDE_EQUALS 
+    | MOD_EQUALS 
+    | LEFT_SHIFT_EQUALS 
+    | RIGHT_SHIFT_EQUALS 
+    | AND_EQUALS 
+    | OR_EQUALS 
+    | XOR_EQUALS) expr)?;
+tertiary = logicOr (COLON expr QM expr)?;
+logicOr = logicAnd (OR expr)?;
+logicAnd = bitwiseOr (AND expr)?;
+bitwiseOr = bitwiseXOr (BOR expr)?;
+bitwiseXOr = bitwiseAnd (BXOR expr)?;
+bitwiseAnd = equals (BAND expr)?;
+equals = comparison ((EE | NE) expr)?;
+comparison = bitShift ((LT | GT | LTE | GTE) expr)?;
+bitShift = addition ((LS | RS) expr)?;
+addition = multiplication ((PLUS | MINUS) expr)?;
+multiplication = cast ((MULT | DIV | MOD) expr)?;
+cast = LPAREN type RPAREN unary; (*could be changed to cast<>(), but we dont have '<'*)
+unary = ((P | M | T) unary) | prefix;
+prefix = ((MM | PP | TT | NN) prefix) | postfix;
+postfix = (postfix (MM | PP | TT | NN | LPAREN (argumentList)? RPAREN | index)) | atom;
+atom = literal 
+    | relationalAccess
+    | newClass 
+    | fieldAccess
+    | methodInvocation
+    | arrayAccess
+    | arrayDeclaration 
+    | IDENTIFIER 
+    | LPAREN expr RPAREN;
+    
+literal = INT | DOUBLE | CHAR | BOOL | STRING | NULL;   
+relationalAccess = THIS | SUPER;
+newClass = NEW IDENTIFIER LPAREN argumentList? RPAREN;
+fieldAccess = atom DOT IDENTIFIER;
+methodInvocation = atom DOT IDENTIFIER LPAREN argumentList? RPAREN;
+arrayDeclaration = RBRACK (argumentList)? LBRACK;
+arrayAccess = atom LBRACK expr RBRACK;
+
+(* Util *)
+param = type varname;
+paramList = param (COMMA param)*;
+argumentList = expr (COMMA expr)*;
+
+(* Types *)
+rettype = type | VOID;
+type = primtype | IDENTIFIER;
+primtype = INT_TYPE 
+    | FLOAT_TYPE 
+    | DOUBLE_TYPE 
+    | BOOLEAN_TYPE 
+    | CHAR_TYPE;
+
+(* Tokens [Not really important for parsing, mostly for documenting lexing] *)
+INT = [0-9]+;
+DOUBLE = '-'? [0-9]+ '.' [0-9]*;
+CHAR = '-'? '\'' ( ^'\\' | '\\' . ) '\'';
+BOOL = 'true' | 'false';
+STRING = '"' (<^'"'> | '\\' . )* '"';
+NULL = 'null';
+IDENTIFIER = [a-zA-Z_][a-zA-Z0-9_]*;

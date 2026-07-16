@@ -1,0 +1,145 @@
+namespace Compiler.Grammar;
+
+class BackusNaurForm
+{
+    private readonly NonTerminalSymbol START_SYMBOL = new NonTerminalSymbol(
+        NonTerminalSymbol.Type.START
+    );
+    private readonly TerminalSymbol EOF = new TerminalSymbol(TerminalSymbol.Type.EOF);
+    private readonly Dictionary<NonTerminalSymbol, List<Production>> productions;
+
+    public BackusNaurForm()
+    {
+        productions = new Dictionary<NonTerminalSymbol, List<Production>>();
+    }
+
+    public void AddProduction(NonTerminalSymbol nonTerminal, List<ISymbol> production)
+    {
+        if (!productions.ContainsKey(nonTerminal))
+        {
+            productions[nonTerminal] = new List<Production>();
+        }
+        productions[nonTerminal].Add(new Production(nonTerminal, production));
+    }
+
+    public void assignStartSymbol(NonTerminalSymbol startSymbol)
+    {
+        AddProduction(START_SYMBOL, new List<ISymbol> { startSymbol, EOF });
+    }
+
+    public LRDFA toLRDFA()
+    {
+        if (!productions.ContainsKey(START_SYMBOL))
+        {
+            throw new InvalidOperationException(
+                "Start symbol not assigned before generating DFA. Try assignStartSymbol()."
+            );
+        }
+        return new LRDFA(productions);
+    }
+}
+
+public struct Production
+{
+    public readonly NonTerminalSymbol NonTerminal { get; }
+    public readonly List<ISymbol> Symbols { get; }
+
+    public Production(NonTerminalSymbol nonTerminal, List<ISymbol> symbols)
+    {
+        NonTerminal = nonTerminal;
+        Symbols = symbols;
+    }
+
+    public LRItem ToLRItem()
+    {
+        return new LRItem(this);
+    }
+}
+
+public interface ISymbol;
+
+public struct TerminalSymbol : ISymbol
+{
+    public enum Type
+    {
+        EOF, // Only Used for the end of the input stream
+    }
+
+    public readonly Type type { get; }
+
+    public TerminalSymbol(Type type)
+    {
+        this.type = type;
+    }
+
+    public bool Equals(TerminalSymbol other)
+    {
+        return type == other.type;
+    }
+
+#nullable enable
+    public override bool Equals(object? obj)
+    {
+        return obj is TerminalSymbol other && Equals(other);
+    }
+
+#nullable disable
+
+    public override int GetHashCode()
+    {
+        return type.GetHashCode();
+    }
+
+    public static bool operator ==(TerminalSymbol left, TerminalSymbol right)
+    {
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(TerminalSymbol left, TerminalSymbol right)
+    {
+        return !left.Equals(right);
+    }
+}
+
+public struct NonTerminalSymbol : ISymbol
+{
+    public enum Type
+    {
+        START, // Only Used for the start symbol of the grammar
+    }
+
+    public readonly Type type { get; }
+
+    public NonTerminalSymbol(Type type)
+    {
+        this.type = type;
+    }
+
+    public bool Equals(NonTerminalSymbol other)
+    {
+        return type == other.type;
+    }
+
+#nullable enable
+    public override bool Equals(object? obj)
+    {
+        return obj is NonTerminalSymbol other && Equals(other);
+    }
+
+#nullable disable
+
+    public override int GetHashCode()
+    {
+        return type.GetHashCode();
+    }
+
+    public static bool operator ==(NonTerminalSymbol left, NonTerminalSymbol right)
+    {
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(NonTerminalSymbol left, NonTerminalSymbol right)
+    {
+        return !left.Equals(right);
+    }
+}

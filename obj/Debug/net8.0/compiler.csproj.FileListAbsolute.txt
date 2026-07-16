@@ -1,0 +1,4 @@
+C:\Users\ktdra\compiler\obj\Debug\net8.0\compiler.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\ktdra\compiler\obj\Debug\net8.0\compiler.AssemblyInfoInputs.cache
+C:\Users\ktdra\compiler\obj\Debug\net8.0\compiler.AssemblyInfo.cs
+C:\Users\ktdra\compiler\obj\Debug\net8.0\compiler.csproj.CoreCompileInputs.cache
