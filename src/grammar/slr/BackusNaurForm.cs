@@ -13,18 +13,19 @@ class BackusNaurForm
         productions = new Dictionary<NonTerminalSymbol, List<Production>>();
     }
 
-    public void AddProduction(NonTerminalSymbol nonTerminal, List<ISymbol> production)
+    public void AddProduction(Production production)
     {
+        NonTerminalSymbol nonTerminal = production.NonTerminal;
         if (!productions.ContainsKey(nonTerminal))
         {
             productions[nonTerminal] = new List<Production>();
         }
-        productions[nonTerminal].Add(new Production(nonTerminal, production));
+        productions[nonTerminal].Add(production);
     }
 
     public void assignStartSymbol(NonTerminalSymbol startSymbol)
     {
-        AddProduction(START_SYMBOL, new List<ISymbol> { startSymbol, EOF });
+        AddProduction(new StartProduction(startSymbol));
     }
 
     public LRDFA toLRDFA()
@@ -39,10 +40,10 @@ class BackusNaurForm
     }
 }
 
-public struct Production
+public abstract class Production
 {
-    public readonly NonTerminalSymbol NonTerminal { get; }
-    public readonly List<ISymbol> Symbols { get; }
+    public NonTerminalSymbol NonTerminal { get; }
+    public List<ISymbol> Symbols { get; }
 
     public Production(NonTerminalSymbol nonTerminal, List<ISymbol> symbols)
     {
@@ -53,6 +54,22 @@ public struct Production
     public LRItem ToLRItem()
     {
         return new LRItem(this);
+    }
+
+    public abstract Node ToNode(Stack<Node> nodeStack);
+}
+
+public class StartProduction : Production
+{
+    public StartProduction(NonTerminalSymbol startSymbol)
+        : base(
+            new NonTerminalSymbol(NonTerminalSymbol.Type.START),
+            new List<ISymbol> { startSymbol, new TerminalSymbol(TerminalSymbol.Type.EOF) }
+        ) { }
+
+    public override Node ToNode(Stack<Node> nodeStack)
+    {
+        return new Node();
     }
 }
 

@@ -44,3 +44,5 @@ requires user consent. Stars help maintainers measure
 impact, attract contributors, and secure funding.
 
 See [https://attribution.md](https://attribution.md) for details.
+
+https://courses.cs.washington.edu/courses/cse401/25au/sections/03-LR-slides.pdf

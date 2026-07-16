@@ -1,11 +1,1 @@
-public class Node
-{
-    
-}
-
-public class ProgramNode : Node
-{
-    Node
-
-    
-}
+public class Node;

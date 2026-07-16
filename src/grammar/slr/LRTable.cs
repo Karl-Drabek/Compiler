@@ -5,12 +5,14 @@ class LRTable
     private readonly Dictionary<LRState, Dictionary<TerminalSymbol, ILRAction>> actionTable;
     private readonly Dictionary<LRState, Dictionary<NonTerminalSymbol, LRState>> gotoTable;
     private readonly Stack<LRState> stateStack;
+    private readonly Stack<Node> nodeStack;
 
     public LRTable()
     {
         actionTable = new Dictionary<LRState, Dictionary<TerminalSymbol, ILRAction>>();
         gotoTable = new Dictionary<LRState, Dictionary<NonTerminalSymbol, LRState>>();
         stateStack = new Stack<LRState>();
+        nodeStack = new Stack<Node>();
     }
 
     public Node Parse(List<TerminalSymbol> input, LRDFA dfa)
@@ -38,7 +40,10 @@ class LRTable
             else if (action is LRReduceAction reduceAction)
             {
                 Production production = reduceAction.Production;
-                foreach (var symbol in production.Symbols)
+                Node node = reduceAction.Production.ToNode(nodeStack);
+                nodeStack.Push(node);
+
+                for (int i = 0; i < production.Symbols.Count; i++)
                 {
                     stateStack.Pop();
                 }
@@ -48,9 +53,11 @@ class LRTable
             }
             else if (action is LRAcceptAction)
             {
-                return new Node("Accept");
+                return nodeStack.Pop();
             }
         }
+
+        return null;
     }
 }
 

@@ -1,3 +1,6 @@
+(* Entry point *)
+program = classdecl*;
+
 (* Clases *)
 classdecl = CLASS IDENTIFIER (EXTENDS IDENTIFIER)? LBRACE decl* RBRACE;
 decl = vardecl | methdecl | constrdecl;
