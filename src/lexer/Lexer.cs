@@ -1,5 +1,7 @@
 using System.Text;
 
+namespace Compiler.Lexer;
+
 public record LexerResult(List<Token> Tokens, List<Error> Errors);
 
 private record TokenResult(Token Token, Error Error);
@@ -13,14 +15,18 @@ public static class Lexer
     private static char _currentChar;
     private static bool _isEndOfFile;
 
-    private static void Advance(){
+    private static void Advance()
+    {
         _position.Advance(_currentChar);
 
         int charCode = _reader.Read();
-        
-        if (charCode == -1){
+
+        if (charCode == -1)
+        {
             _isEndOfFile = true;
-        } else {
+        }
+        else
+        {
             _currentChar = (char)charCode;
         }
     }
@@ -29,14 +35,16 @@ public static class Lexer
 
     private static bool validIdentifierChar(char c) => Char.IsLetterOrDigit(c) || c == '_';
 
-    private static Token MakeIdentifier(){
+    private static Token MakeIdentifier()
+    {
 
         Position startPosition = _position;
         var stringBuilder = new StringBuilder(_currentChar);
 
         Advance();
 
-        while (validIdentifierChar(_currentChar) && !_isEndOfFile){
+        while (validIdentifierChar(_currentChar) && !_isEndOfFile)
+        {
             stringBuilder.Append(_currentChar);
             Advance();
         }
@@ -45,16 +53,20 @@ public static class Lexer
 
         TokenType? tokenType = Token.GetKeywordTokenType(identifier);
 
-        if (tokenType is not null){
+        if (tokenType is not null)
+        {
             return new Token(tokenType.Value, startPosition, _position);
-        } else {
+        }
+        else
+        {
             return new Token(TokenType.Identifier, identifier, startPosition, _position);
         }
     }
 
     private static bool validNumberChar(char c) => char.IsNumber(c) || c == '.';
 
-    private static TokenResult MakeNumber(){
+    private static TokenResult MakeNumber()
+    {
 
         Position startPosition = _position;
         bool hasPoint = false;
@@ -62,8 +74,10 @@ public static class Lexer
 
         Advance();
 
-        while (validNumberChar(_currentChar) && !_isEndOfFile){
-            if (_currentChar == '.'){
+        while (validNumberChar(_currentChar) && !_isEndOfFile)
+        {
+            if (_currentChar == '.')
+            {
                 // We don't allow two points in a number
                 if (hasPoint)
                     break;
@@ -75,48 +89,59 @@ public static class Lexer
 
         string number = stringBuilder.ToString();
 
-        if (hasPoint){
-            try{
+        if (hasPoint)
+        {
+            try
+            {
                 return new TokenResult(new DoubleToken(double.Parse(number), startPosition, _position), null);
             }
-            catch (OverflowException){
+            catch (OverflowException)
+            {
                 return new TokenResult(null, new Error(startPosition, _position, "Number Too Large", $"\"{number}\" cannot be represented as a double"));
             }
         }
-        else{
-            try{
+        else
+        {
+            try
+            {
                 return new TokenResult(new IntToken(int.Parse(number), startPosition, _position), null);
             }
-            catch (OverflowException){
+            catch (OverflowException)
+            {
                 return new TokenResult(null, new Error(startPosition, _position, "Integer Overflow", $"\"{number}\" cannot be represented as an integer"));
             }
         }
-        
+
     }
 
-    private static Token MakeString(){
+    private static Token MakeString()
+    {
 
         var stringBuilder = new StringBuilder();
         Position startPosition = _position;
 
         Advance();
 
-        while (_currentChar != '"' && !_isEndOfFile){
-            if (_currentChar == '\\'){
+        while (_currentChar != '"' && !_isEndOfFile)
+        {
+            if (_currentChar == '\\')
+            {
                 Advance();
-                if(_isEndOfFile)
+                if (_isEndOfFile)
                     break;
             }
             stringBuilder.Append(_currentChar);
             Advance();
         }
-        if(!_isEndOfFile){
+        if (!_isEndOfFile)
+        {
             Advance();
         }
         return new Token(TokenType.String, stringBuilder.ToString(), startPosition, _position);
     }
 
-    public static LexerResult MakeTokens(string fileName){
+    public static LexerResult MakeTokens(string fileName)
+    {
 
         // Initialize statics
         _reader = new StreamReader(fileName);
@@ -130,47 +155,60 @@ public static class Lexer
         Position positionStart = _position;
         var errors = new List<Error>();
 
-        while (!_isEndOfFile){
-            if (IsWhiteSpace(_currentChar)){
+        while (!_isEndOfFile)
+        {
+            if (IsWhiteSpace(_currentChar))
+            {
                 Advance();
             }
-            else if (_currentChar == '#'){ // Comment
+            else if (_currentChar == '#')
+            { // Comment
                 Advance();
-                while (_currentChar != '#' && !_isEndOfFile){
+                while (_currentChar != '#' && !_isEndOfFile)
+                {
                     Advance();
                 }
                 Advance();
             }
-            else if (validFirstIdentifierChar(_currentChar)){
+            else if (validFirstIdentifierChar(_currentChar))
+            {
                 tokens.Add(MakeIdentifier());
             }
-            else if (IsNumber(_currentChar)){
+            else if (IsNumber(_currentChar))
+            {
                 tokens.Add(MakeNumber());
             }
-            else if (_currentChar == '"'){
+            else if (_currentChar == '"')
+            {
                 tokens.Add(MakeString());
             }
-            else{
-                switch (_currentChar){
+            else
+            {
+                switch (_currentChar)
+                {
                     case '+':
                         positionStart = _position;
                         Advance();
-                        if (_currentChar == '+' && !_isEndOfFile){
+                        if (_currentChar == '+' && !_isEndOfFile)
+                        {
                             Advance();
                             tokens.Add(new Token(TokenType.PP, positionStart, _position));
                         }
-                        else{
+                        else
+                        {
                             tokens.Add(new Token(TokenType.Plus, positionStart, _position));
                         }
                         break;
                     case '-':
                         positionStart = _position;
                         Advance();
-                        if (_currentChar == '-' && !_isEndOfFile){
+                        if (_currentChar == '-' && !_isEndOfFile)
+                        {
                             Advance();
                             tokens.Add(new Token(TokenType.MM, positionStart, _position));
                         }
-                        else{
+                        else
+                        {
                             tokens.Add(new Token(TokenType.Minus, positionStart, _position));
                         }
                         break;
@@ -192,11 +230,13 @@ public static class Lexer
                     case '=':
                         positionStart = _position;
                         Advance();
-                        if(_isEndOfFile){
+                        if (_isEndOfFile)
+                        {
                             tokens.Add(new Token(TokenType.EQ, positionStart, _position));
                             break;
                         }
-                        switch (_currentChar){
+                        switch (_currentChar)
+                        {
                             case '+':
                                 Advance();
                                 tokens.Add(new Token(TokenType.EPlus, positionStart, _position));
@@ -229,22 +269,26 @@ public static class Lexer
                     case '<':
                         positionStart = _position;
                         Advance();
-                        if (_currentChar == '=' && !_isEndOfFile){
+                        if (_currentChar == '=' && !_isEndOfFile)
+                        {
                             Advance();
                             tokens.Add(new Token(TokenType.LTE, positionStart, _position));
                         }
-                        else{
+                        else
+                        {
                             tokens.Add(new Token(TokenType.LT, positionStart, _position));
                         }
                         break;
                     case '>':
                         positionStart = _position;
                         Advance();
-                        if (_currentChar == '=' && !_isEndOfFile){
+                        if (_currentChar == '=' && !_isEndOfFile)
+                        {
                             Advance();
                             tokens.Add(new Token(TokenType.GTE, positionStart, _position));
                         }
-                        else{
+                        else
+                        {
                             tokens.Add(new Token(TokenType.GT, positionStart, _position));
                         }
                         break;
@@ -301,11 +345,13 @@ public static class Lexer
                     case '!':
                         positionStart = _position;
                         Advance();
-                        if(_isEndOfFile){
+                        if (_isEndOfFile)
+                        {
                             tokens.Add(new Token(TokenType.Not, positionStart, _position));
                             break;
                         }
-                        switch(_currentChar){
+                        switch (_currentChar)
+                        {
                             case '=':
                                 Advance();
                                 tokens.Add(new Token(TokenType.NE, positionStart, _position));
@@ -329,7 +375,7 @@ public static class Lexer
                         positionStart = _position;
                         char character = _currentChar;
                         Advance();
-                        return new LexerResult(null , new Error(positionStart, _position, "Illegal Character", $"\"{character}\""));
+                        return new LexerResult(null, new Error(positionStart, _position, "Illegal Character", $"\"{character}\""));
                 }
             }
         }

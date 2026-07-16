@@ -17,15 +17,19 @@ class LRTable
     {
         stateStack.Push(dfa.startState);
 
-        foreach(var currentSymbol in input){ 
+        foreach (var currentSymbol in input)
+        {
             LRState currentState = stateStack.Peek();
 
-            if (!actionTable.ContainsKey(currentState) || !actionTable[currentState].ContainsKey(currentSymbol))
+            if (
+                !actionTable.ContainsKey(currentState)
+                || !actionTable[currentState].TryGetValue(currentSymbol, out ILRAction action)
+            )
             {
-                throw new InvalidOperationException($"No action defined for state {currentState} and symbol {currentSymbol}");
+                throw new InvalidOperationException(
+                    $"No action defined for state {currentState} and symbol {currentSymbol}"
+                );
             }
-
-            ILRAction action = actionTable[currentState][currentSymbol];
 
             if (action is LRShiftAction shiftAction)
             {
@@ -34,7 +38,7 @@ class LRTable
             else if (action is LRReduceAction reduceAction)
             {
                 Production production = reduceAction.Production;
-                foreach(var symbol in production.Symbols)
+                foreach (var symbol in production.Symbols)
                 {
                     stateStack.Pop();
                 }
@@ -48,7 +52,6 @@ class LRTable
             }
         }
     }
-
 }
 
 public interface ILRAction;
