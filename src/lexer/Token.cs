@@ -127,6 +127,19 @@ public class IntToken : Token
     public override string ToString() => $"[Int, {Value}]";
 }
 
+public class StringToken : Token
+{
+    public readonly string Value;
+
+    public StringToken(TokenType type, string value, Position posStart, Position posEnd)
+        : base(type, posStart, posEnd)
+    {
+        Value = value;
+    }
+
+    public override string ToString() => $"[String, {Value}]";
+}
+
 public class DoubleToken : Token
 {
     public readonly double Value;

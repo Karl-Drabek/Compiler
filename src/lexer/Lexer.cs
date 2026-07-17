@@ -1,16 +1,17 @@
 using System.Text;
+using Compiler.utils;
 
 namespace Compiler.Lexer;
 
 public record LexerResult(List<Token> Tokens, List<Error> Errors);
 
-private record TokenResult(Token Token, Error Error);
+public record TokenResult(Token Token, Error Error);
 
 public static class Lexer
 {
-
     private static StreamReader _reader;
     private static Position _position;
+
     // only valid if _isEndOfFile is false
     private static char _currentChar;
     private static bool _isEndOfFile;
@@ -37,7 +38,6 @@ public static class Lexer
 
     private static Token MakeIdentifier()
     {
-
         Position startPosition = _position;
         var stringBuilder = new StringBuilder(_currentChar);
 
@@ -59,7 +59,7 @@ public static class Lexer
         }
         else
         {
-            return new Token(TokenType.Identifier, identifier, startPosition, _position);
+            return new IdentifierToken(identifier, startPosition, _position);
         }
     }
 
@@ -67,7 +67,6 @@ public static class Lexer
 
     private static TokenResult MakeNumber()
     {
-
         Position startPosition = _position;
         bool hasPoint = false;
         var stringBuilder = new StringBuilder(_currentChar);
@@ -93,30 +92,50 @@ public static class Lexer
         {
             try
             {
-                return new TokenResult(new DoubleToken(double.Parse(number), startPosition, _position), null);
+                return new TokenResult(
+                    new DoubleToken(double.Parse(number), startPosition, _position),
+                    null
+                );
             }
             catch (OverflowException)
             {
-                return new TokenResult(null, new Error(startPosition, _position, "Number Too Large", $"\"{number}\" cannot be represented as a double"));
+                return new TokenResult(
+                    null,
+                    new Error(
+                        startPosition,
+                        _position,
+                        "Number Too Large",
+                        $"\"{number}\" cannot be represented as a double"
+                    )
+                );
             }
         }
         else
         {
             try
             {
-                return new TokenResult(new IntToken(int.Parse(number), startPosition, _position), null);
+                return new TokenResult(
+                    new IntToken(int.Parse(number), startPosition, _position),
+                    null
+                );
             }
             catch (OverflowException)
             {
-                return new TokenResult(null, new Error(startPosition, _position, "Integer Overflow", $"\"{number}\" cannot be represented as an integer"));
+                return new TokenResult(
+                    null,
+                    new Error(
+                        startPosition,
+                        _position,
+                        "Integer Overflow",
+                        $"\"{number}\" cannot be represented as an integer"
+                    )
+                );
             }
         }
-
     }
 
     private static Token MakeString()
     {
-
         var stringBuilder = new StringBuilder();
         Position startPosition = _position;
 
@@ -137,12 +156,16 @@ public static class Lexer
         {
             Advance();
         }
-        return new Token(TokenType.String, stringBuilder.ToString(), startPosition, _position);
+        return new StringToken(
+            TokenType.String,
+            stringBuilder.ToString(),
+            startPosition,
+            _position
+        );
     }
 
     public static LexerResult MakeTokens(string fileName)
     {
-
         // Initialize statics
         _reader = new StreamReader(fileName);
         // Start at negative row so that advance works properly
@@ -152,12 +175,12 @@ public static class Lexer
         Advance();
 
         var tokens = new List<Token>();
-        Position positionStart = _position;
+        Position positionStart;
         var errors = new List<Error>();
 
         while (!_isEndOfFile)
         {
-            if (IsWhiteSpace(_currentChar))
+            if (char.IsWhiteSpace(_currentChar))
             {
                 Advance();
             }
@@ -174,9 +197,18 @@ public static class Lexer
             {
                 tokens.Add(MakeIdentifier());
             }
-            else if (IsNumber(_currentChar))
+            else if (char.IsDigit(_currentChar))
             {
-                tokens.Add(MakeNumber());
+                TokenResult tokenResult = MakeNumber();
+
+                if (tokenResult.Error != null)
+                {
+                    errors.Add(tokenResult.Error);
+                }
+                if (tokenResult.Token != null)
+                {
+                    tokens.Add(tokenResult.Token);
+                }
             }
             else if (_currentChar == '"')
             {
@@ -375,7 +407,15 @@ public static class Lexer
                         positionStart = _position;
                         char character = _currentChar;
                         Advance();
-                        return new LexerResult(null, new Error(positionStart, _position, "Illegal Character", $"\"{character}\""));
+                        errors.Add(
+                            new Error(
+                                positionStart,
+                                _position,
+                                "Illegal Character",
+                                $"\"{character}\""
+                            )
+                        );
+                        break;
                 }
             }
         }
