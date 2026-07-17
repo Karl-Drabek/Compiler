@@ -1,4 +1,6 @@
-namespace Compiler.Grammar;
+using Compiler.Grammar;
+
+namespace Compiler.Parser.SLR;
 
 public class LRDFA
 {

@@ -1,4 +1,7 @@
-namespace Compiler.Grammar;
+using Compiler.Grammar;
+using Compiler.Parser.AST;
+
+namespace Compiler.Parser.SLR;
 
 class LRTable
 {

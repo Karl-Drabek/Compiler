@@ -5,7 +5,7 @@ program = classdecl*;
 classdecl = CLASS IDENTIFIER (EXTENDS IDENTIFIER)? LBRACE decl* RBRACE;
 decl = vardecl | methdecl | constrdecl;
 vardecl = type IDENTIFIER (EQUALS expr)? SEMICOLON;
-methdecl = rettype methname LPAREN paramList? RPAREN LBRACE statements RBRACE;
+methdecl = rettype IDENTIFIER LPAREN paramList? RPAREN LBRACE statements RBRACE;
 constrdecl = IDENTIFIER LPAREN paramList? RPAREN LBRACE statements RBRACE;
 
 (* Statements *)
@@ -17,6 +17,8 @@ statement = vardecl
     | foreach
     | while
     | dowhile
+    | loop
+    | switch
     | if
     | try
     | expr SEMICOLON
@@ -25,7 +27,7 @@ statement = vardecl
 block = LBRACE statements RBRACE;
 (* TODO: Look into "no short if" to deal with dangling else ambiguity*)
 if = IF LPAREN expr RPAREN statement (ELSE statement)?;
-for = FOR LPAREN (type IDENTIFIER EQUALS expr)? SEMICOLON expr? SEMICOLON expr? RPAREN statement;
+for = FOR LPAREN expr? SEMICOLON expr? SEMICOLON expr? RPAREN statement;
 foreach = FOREACH LPAREN type IDENTIFIER IN expr RPAREN statement;
 while = WHILE LPAREN expr RPAREN statement;
 dowhile = DO statement WHILE LPAREN expr RPAREN SEMICOLON;
@@ -36,10 +38,9 @@ switchLabel = CASE expr COLON | DEFAULT COLON;
 
 jump = CONTINUE
     | BREAK
-    | RETURN expr?
-    | THROW;
+    | RETURN expr?;
 
-try = TRY block catches? finally?;
+try = TRY statement catches? finally?;
 catches = catchClause (catches)?;
 catchClause = CATCH LPAREN param RPAREN block;
 finally = FINALLY block;
