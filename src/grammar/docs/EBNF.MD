@@ -16,3 +16,5 @@ EBNF stands for **Extended Backus–Naur Form**. It is a notation used to descri
 ## Terminals vs Non-Terminals
 
 Terminals should be denoted in **UPPERCASE** and non terminals should be written in **lowercase**.
+
+TODO: Examples. Flesh out this document. ect.

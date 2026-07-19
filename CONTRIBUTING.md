@@ -1,5 +1,5 @@
 # Introduction
-
+TODO: fill out this template
 ### Write something nice here!
 
 >First off, thank you for considering contributing to Active Admin. It's people like you that make Active Admin such a great tool.
