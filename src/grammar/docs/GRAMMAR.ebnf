@@ -46,7 +46,7 @@ catchClause = CATCH LPAREN param RPAREN block;
 finally = FINALLY block;
 
 (* expressions *)
-expr = tertiary ((EQUALS 
+expr = ternary ((EQUALS 
     | PLUS_EQUALS 
     | MINUS_EQUALS 
     | MULTIPLY_EQUALS 
@@ -57,15 +57,17 @@ expr = tertiary ((EQUALS
     | AND_EQUALS 
     | OR_EQUALS 
     | XOR_EQUALS) expr)?;
-tertiary = logicOr (COLON expr QM expr)?;
+ternary = nullCoalescing (COLON expr QM expr)?;
+nullCoalescing = logicOr (NULL_COALESCING expr)?;
 logicOr = logicAnd (OR expr)?;
 logicAnd = bitwiseOr (AND expr)?;
 bitwiseOr = bitwiseXOr (BOR expr)?;
 bitwiseXOr = bitwiseAnd (BXOR expr)?;
 bitwiseAnd = equals (BAND expr)?;
 equals = comparison ((EE | NE) expr)?;
-comparison = bitShift ((LT | GT | LTE | GTE) expr)?;
-bitShift = addition ((LS | RS) expr)?;
+comparison = type ((LT | GT | LTE | GTE) expr)?;
+type = bitshift ((IS | AS) type)?
+bitshift = addition ((LS | RS) expr)?;
 addition = multiplication ((PLUS | MINUS) expr)?;
 multiplication = cast ((MULT | DIV | MOD) expr)?;
 cast = LPAREN type RPAREN unary; (*could be changed to cast<>(), but we dont have '<'*)
@@ -76,19 +78,23 @@ atom = literal
     | relationalAccess
     | newClass 
     | fieldAccess
+    | nullConditionalFieldAccess
     | methodInvocation
     | arrayAccess
+    | nullConditionalArrayAccess
     | arrayDeclaration 
     | IDENTIFIER 
     | LPAREN expr RPAREN;
     
 literal = INT | DOUBLE | CHAR | BOOL | STRING | NULL;   
-relationalAccess = THIS | SUPER;
+relationalAccess = THIS | PARENT;
 newClass = NEW IDENTIFIER LPAREN argumentList? RPAREN;
 fieldAccess = atom DOT IDENTIFIER;
+nullConditionalFieldAccess = atom NULL_CONDITIONAL_FIELD_ACCESS IDENTIFIER;
 methodInvocation = atom DOT IDENTIFIER LPAREN argumentList? RPAREN;
-arrayDeclaration = RBRACK (argumentList)? LBRACK;
+arrayDeclaration = LBRACK (argumentList)? RBRACK;
 arrayAccess = atom LBRACK expr RBRACK;
+nullConditionalArrayAccess = atom NULL_CONDITIONAL_ARRAY_ACCESS LBRACK expr RBRACK;
 
 (* Util *)
 param = type varname;

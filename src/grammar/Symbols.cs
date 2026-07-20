@@ -12,62 +12,116 @@ public interface ISymbol;
 /// </summary>
 public struct TerminalSymbol : ISymbol, IEquatable<TerminalSymbol>
 {
-    public enum Type //TODO: Update and fix names
+    public enum Type
     {
-        Int,
-        String,
-        Double,
-        Bool,
-        Func,
-        IntType,
-        StringType,
-        DoubleType,
-        BoolType,
-        Plus,
-        Minus,
-        Multiply,
-        Divide,
-        Power,
-        EQ,
-        EPlus,
-        EMinus,
-        EMult,
-        EDiv,
-        EPow,
-        PP,
-        MM,
-        LParen,
-        RParen,
-        LBrace,
-        RBrace,
-        LBrack,
-        RBrack,
-        EE,
-        NE,
-        LT,
-        GT,
-        LTE,
-        GTE,
-        Comma,
-        SC,
-        Point,
-        Collon,
-        And,
-        Or,
-        Not,
+        //Literals
+        IntLiteral,
+        StringLiteral,
+        DoubleLiteral, 
+        BoolLiteral,
+        CharLiteral,
+        NullLiteral,
+
+        // Types
+        IntType, // int
+        CharType, // char
+        StringType, // string
+        DoubleType, // double
+        BoolType, // bool
+        VoidType, // void
+
+        // Arithmetic Operators
+        Plus, // +
+        Minus, // -
+        Multiply, // *
+        Divide, // /
+        Modulo, // %
+
+        //Logical Operators
+        LogicalNot, // !
+        LogicalAnd, // &&
+        LogicalOr, // ||
+        NullCoalescing, // ??
+
+        // Comparison Operators
+        EqualEqual, // ==
+        NotEqual, // !=
+        LessThan, // <
+        GreaterThan, // >
+        LessThanOrEqual, // <=
+        GreaterThanOrEqual, // >=
+
+        // Bitwise Operators
+        BitwiseXor, // ^
+        BitwiseOr, // |
+        BitwiseAnd, // &
+        BitwiseNot, // ~
+        LeftShift, // <<
+        RightShift, // >>
+
+        // Binary Assignment Operators
+        Equals, // =
+        EqualsPlus, // +=
+        EqualsMinus, // -=
+        EqualsMultiply, // *=
+        EqualsDivide, // /=
+        EqualsModulo, // %=
+        LeftShiftEquals, // <<=
+        RightShiftEquals, // >>=
+        AndEquals, // &=
+        OrEquals, // |=
+        XorEquals, // ^=
+        NullCoalescingEquals, // ??=
+
+        // Unary Assignment Operators
+        Increment, // ++
+        Decrement, // --
+        LogicalNegation, // !!
+        BitwiseNegation, // ~~
+
+        // Punctuation
+        LeftParen, // (
+        RightParen, // )
+        LBrace, // {
+        RightBrace, // }
+        LBrack, // [
+        RBrack, // ]
+        Comma, // ,
+        Semicolon, // ;
+        Dot, // .
+        NullConditionalFieldAccess, // ?.
+        NullConditionalArrayAccess, // ?[
+        Colon, // :
+        QuestionMark, // ?
+
+        // Keywords
         If,
-        Elif,
-        Try,
-        Eltry,
         Else,
-        Repeat,
+        Try,
+        Catch,
+        Finally,
+        For,
+        Foreach,
+        In,
         Loop,
+        Do,
         While,
+        Switch,
+        Case,
+        Default,
         Return,
         Continue,
         Break,
+        Class,
+        Extends,
+        This,
+        Parent,
+        New,
+        Is,
+
+        // Special cases
         EOF, // Used for the end of the input stream
-        Identifier,
+        Identifier, // User defined identifier
     }
 
     public readonly Type type { get; }

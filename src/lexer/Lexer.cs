@@ -87,16 +87,7 @@ public static class Lexer
 
         string identifier = stringBuilder.ToString();
 
-        TerminalSymbol.Type? tokenType = Token.GetKeywordType(identifier);
-
-        if (tokenType is not null)
-        {
-            return new Token(tokenType.Value, startPosition, _position);
-        }
-        else
-        {
-            return new IdentifierToken(identifier, startPosition, _position);
-        }
+        return Token.MakeTokenFromString(identifier, startPosition, _position);
     }
 
     /// <summary>
