@@ -3,7 +3,7 @@ using Compiler.Parser.AST;
 
 namespace Compiler.Parser.SLR;
 
-public abstract class Production
+public class Production
 {
     public NonTerminalSymbol NonTerminal { get; }
     public List<ISymbol> Symbols { get; }
@@ -19,7 +19,8 @@ public abstract class Production
         return new LRItem(this);
     }
 
-    public abstract Node ToNode(Stack<Node> nodeStack);
+// TODO
+    //public abstract Node ToNode(Stack<Node> nodeStack);
 }
 
 public class StartProduction : Production
@@ -29,9 +30,4 @@ public class StartProduction : Production
             new NonTerminalSymbol(NonTerminalSymbol.Type.START),
             new List<ISymbol> { startSymbol, new TerminalSymbol(TerminalSymbol.Type.EOF) }
         ) { }
-
-    public override Node ToNode(Stack<Node> nodeStack)
-    {
-        return new Node();
-    }
 }

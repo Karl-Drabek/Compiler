@@ -6,13 +6,12 @@ namespace Compiler.Grammar;
 /// Represents a context-free grammar in Backus-Naur Form (BNF) and provides 
 /// methods to define productions and generate an LR DFA.
 /// </summary>
-class BackusNaurForm
+public class BackusNaurForm
 {
     private readonly NonTerminalSymbol START_SYMBOL = new NonTerminalSymbol(
         NonTerminalSymbol.Type.START
     );
-    private readonly TerminalSymbol EOF = new TerminalSymbol(TerminalSymbol.Type.EOF);
-    private readonly Dictionary<NonTerminalSymbol, List<Production>> productions;
+    protected readonly Dictionary<NonTerminalSymbol, List<Production>> productions;
     
     /// <summary>
     /// Initializes a new instance of the BackusNaurForm class with an empty set of productions.
@@ -39,6 +38,19 @@ class BackusNaurForm
             productions[nonTerminal] = new List<Production>();
         }
         productions[nonTerminal].Add(production);
+    }
+
+    /// <summary>
+    /// Adds a production rule to the grammar for the specified non-terminal symbol using an EBNF production. This method converts the EBNF production into one or more standard productions and adds them to the grammar.
+    /// </summary>
+    /// <param name="symbol">The non-terminal symbol for which the production rules are defined.</param>
+    /// <param name="ebnfProduction">The EBNF production that defines the production rules for the non-terminal symbol.</param>
+    public void AddProduction(NonTerminalSymbol symbol, EBNFProduction ebnfProduction)
+    {
+        foreach (var production in ebnfProduction.GetProductions(symbol))
+        {
+            AddProduction(production);
+        }
     }
 
     /// <summary>

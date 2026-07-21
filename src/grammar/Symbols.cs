@@ -4,7 +4,32 @@ namespace Compiler.Grammar;
 /// <summary>
 /// Represents a symbol in the grammar, which can be either a terminal or non-terminal symbol.
 /// </summary>
-public interface ISymbol;
+public interface ISymbol
+{
+    /// <summary>
+    /// Combines two symbols into an EBNFBuilder using the OR operator. This allows for the creation of 
+    /// an EBNF expression that represents a choice between the two symbols.
+    /// </summary>
+    /// <param name="left">The left-hand side symbol of the OR operation.</param>
+    /// <param name="right">The right-hand side symbol of the OR operation.</param>
+    /// <returns>An EBNFBuilder representing the choice between the two symbols.</returns>
+    public static EBNFProduction operator |(ISymbol left, ISymbol right)
+    {
+        return EBNFProduction.Or(left, right);
+    }
+
+    /// <summary>
+    /// Combines two symbols into an EBNFBuilder using the AND operator. This allows for the creation of 
+    /// an EBNF expression that represents a sequence of the two symbols.
+    /// </summary>
+    /// <param name="left">The left-hand side symbol of the AND operation.</param>
+    /// <param name="right">The right-hand side symbol of the AND operation.</param>
+    /// <returns>An EBNFBuilder representing the sequence of the two symbols.</returns>
+    public static EBNFProduction operator &(ISymbol left, ISymbol right)
+    {
+        return EBNFProduction.And(left, right);
+    }
+}
 
 /// <summary>
 /// Represents a terminal symbol in the grammar. These are the same symbols produced by a tokenizer 
