@@ -8,9 +8,6 @@ namespace Compiler.Grammar;
 /// </summary>
 public class BackusNaurForm
 {
-    private readonly NonTerminalSymbol START_SYMBOL = new NonTerminalSymbol(
-        NonTerminalSymbol.Type.START
-    );
     protected readonly Dictionary<NonTerminalSymbol, List<Production>> productions;
     
     /// <summary>
@@ -69,10 +66,10 @@ public class BackusNaurForm
     /// <exception cref="InvalidOperationException">Thrown if the start symbol has not been assigned before generating the DFA.</exception>
     public LRDFA toLRDFA()
     {
-        if (!productions.ContainsKey(START_SYMBOL))
+        if (!productions.ContainsKey(StartSymbol.Instance))
         {
             throw new InvalidOperationException(
-                "Start symbol not assigned before generating DFA. Try assignStartSymbol()."
+                "Start symbol not assigned before generating DFA. Try assignStartSymbol() with StartSymbol.Instance."
             );
         }
         return new LRDFA(productions);

@@ -1,9 +1,22 @@
 namespace Compiler.Parser.AST;
 
+public interface INodal;
+
+public class Collection<T> : INodal
+{
+    public List<T> Items { get; }
+
+    public Collection(List<T> items)
+    {
+        Items = items;
+    }
+}
+
 /// <summary>
 /// Represents a generic node in the abstract syntax tree (AST).
 /// </summary>
-public class Node;
+public class Node : INodal;
+
 
 /// <summary>
 /// Represents the root node of the AST, containing the top-level class declaration.

@@ -7,7 +7,15 @@ namespace Compiler.Grammar;
 /// </summary>
 public class EBNFProduction
 {
-    HashSet<List<ISymbol>> symbols;
+    /// <summary>
+    /// Gets or sets the set of symbol sequences that define the EBNF production.
+    /// </summary>
+    public HashSet<List<ISymbol>> symbols { get; set; }
+
+    /// <summary>
+    /// Gets or sets the set of standard productions generated from the EBNF production.
+    /// </summary>
+    public HashSet<Production> productions { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the EBNFProduction class with an empty set of symbol sequences.
@@ -15,6 +23,7 @@ public class EBNFProduction
     public EBNFProduction()
     {
         symbols = new();
+        productions = new();
     }
 
     /// <summary>
@@ -23,7 +32,8 @@ public class EBNFProduction
     /// <param name="symbols">The set of symbol sequences to initialize the EBNF production with.</param>
     public EBNFProduction(HashSet<List<ISymbol>> symbols)
     {
-        this.symbols = [.. symbols];
+        this.symbols = new(symbols);
+        productions = new();
     }
 
     /// <summary>
@@ -31,17 +41,27 @@ public class EBNFProduction
     /// </summary>
     /// <param name="symbol">The non-terminal symbol for which the standard productions are generated.</param>
     /// <returns>A list of standard productions corresponding to the symbol sequences in the EBNF production.</returns>
-    public List<Production> GetProductions(NonTerminalSymbol symbol)
+    public HashSet<Production> GetProductions(NonTerminalSymbol symbol)
     {
-        List<Production> productions = new();
+        HashSet<Production> newProductions = new(productions);
         foreach (var symbolList in symbols)
         {
-            productions.Add(new Production(symbol, symbolList));
+            newProductions.Add(new Production(symbol, symbolList));
         }
-        return productions;
+        return newProductions;
     }
 
-    // OR
+    /// <summary>
+    /// Stores the productions generated from the EBNF production for the specified non-terminal symbol and clears the symbol sequences.
+    /// </summary>
+    /// <param name="symbol">The non-terminal symbol for which the productions are stored.</param>
+    public void storeProductions(NonTerminalSymbol symbol)
+    {
+        productions = GetProductions(symbol);
+        symbols = new();
+    }
+
+    // ---------- OR ----------
     /// <summary>
     /// Creates a new EBNF production that represents the logical OR (alternation) of the two specified EBNF productions. The resulting EBNF production contains all symbol sequences from both the left and right productions.
     /// </summary>
@@ -50,7 +70,10 @@ public class EBNFProduction
     /// <returns>A new EBNF production representing the logical OR of the left and right productions.</returns>
     public static EBNFProduction Or(EBNFProduction left, EBNFProduction right)
     {
-        return new EBNFProduction([.. left.symbols, .. right.symbols]);
+        EBNFProduction result = new EBNFProduction([.. left.symbols, .. right.symbols]);
+        result.productions.UnionWith(left.productions);
+        result.productions.UnionWith(right.productions);
+        return result;
     }
 
     /// <summary>
@@ -61,7 +84,7 @@ public class EBNFProduction
     /// <returns>A new EBNF production representing the logical OR of the left production and the right symbol.</returns>
     public static EBNFProduction Or(EBNFProduction left, ISymbol right)
     {
-        return new EBNFProduction([.. left.symbols, new List<ISymbol> { right }]);
+        return new EBNFProduction([.. left.symbols, [right]]);
     }
 
     /// <summary>
@@ -83,10 +106,10 @@ public class EBNFProduction
     /// <returns>A new EBNF production representing the logical OR of the two symbols.</returns>
     public static EBNFProduction Or(ISymbol left, ISymbol right)
     {
-        return new EBNFProduction([new List<ISymbol> { left }, new List<ISymbol> { right }]);
+        return new EBNFProduction([[left], [right]]);
     }
 
-    // OR operator overloads
+    // ---------- OR operator overloads ----------
 
     /// <summary>
     /// Overloads the | operator to perform the logical OR (alternation) of two EBNF productions.
@@ -121,7 +144,7 @@ public class EBNFProduction
         return Or(left, right);
     }
 
-    // AND
+    // ---------- AND ----------
 
     /// <summary>
     /// Creates a new EBNF production that represents the logical AND (concatenation) of two EBNF productions. The resulting EBNF production contains all possible concatenations of the symbol sequences from the left and right productions.
@@ -131,7 +154,7 @@ public class EBNFProduction
     /// <returns>A new EBNF production representing the logical AND of the left and right productions.</returns>
     public static EBNFProduction And(EBNFProduction left, EBNFProduction right)
     {
-        HashSet<List<ISymbol>> symbols = new();
+        HashSet<List<ISymbol>> symbols = [];
         foreach (var leftSymbols in left.symbols)
         {
             foreach (var rightSymbols in right.symbols)
@@ -139,7 +162,11 @@ public class EBNFProduction
                 symbols.Add(leftSymbols.Concat(rightSymbols).ToList());
             }
         }
-        return new EBNFProduction(symbols);
+
+        EBNFProduction result = new EBNFProduction(symbols);
+        result.productions.UnionWith(left.productions);
+        result.productions.UnionWith(right.productions);
+        return result;
     }
 
     /// <summary>
@@ -150,13 +177,7 @@ public class EBNFProduction
     /// <returns>A new EBNF production representing the logical AND of the left production and the right symbol.</returns>
     public static EBNFProduction And(EBNFProduction left, ISymbol right)
     {
-        HashSet<List<ISymbol>> symbols = new();
-        foreach (var leftSymbols in left.symbols)
-        {
-            leftSymbols.Add(right);
-            symbols.Add(leftSymbols.ToList());
-        }
-        return new EBNFProduction(symbols);
+        return And(left, new EBNFProduction([[right]]));
     }
 
     /// <summary>
@@ -178,10 +199,10 @@ public class EBNFProduction
     /// <returns>A new EBNF production representing the logical AND of the two symbols.</returns>
     public static EBNFProduction And(ISymbol left, ISymbol right)
     {
-        return new EBNFProduction([new List<ISymbol> { left, right }]);
+        return new EBNFProduction([[left, right]]);
     }
 
-    // AND operator overloads
+    // ---------- AND operator overloads ----------
 
     /// <summary>
     /// Creates a new EBNF production that represents the logical AND (concatenation) of two EBNF productions. The resulting EBNF production contains all possible concatenations of the symbol sequences from the left and right productions.
@@ -216,7 +237,7 @@ public class EBNFProduction
         return And(left, right);
     }
 
-    // Optional
+    // ---------- OPTIONAL ----------
 
     /// <summary>
     /// Creates a new EBNF production that represents an optional EBNF production. The resulting EBNF production contains all the symbol sequences from the original production, as well as an empty sequence representing the optionality.
@@ -225,7 +246,7 @@ public class EBNFProduction
     /// <returns>A new EBNF production representing the optional version of the input production.</returns>
     public static EBNFProduction Optional(EBNFProduction builder)
     {
-        builder.symbols.Add(new List<ISymbol>());
+        builder.symbols.Add([]);
         return new EBNFProduction(builder.symbols);
     }
 
@@ -236,8 +257,60 @@ public class EBNFProduction
     /// <returns>A new EBNF production representing the optional version of the input symbol.</returns>
     public static EBNFProduction Optional(ISymbol symbol)
     {
-        return Optional(new EBNFProduction([new List<ISymbol> { symbol }]));
+        return Optional(new EBNFProduction([[symbol]]));
     }
 
-    // TODO: Zero or more
+    // ---------- ZERO OR MORE ----------
+    /// <summary>
+    /// Creates a new EBNF production that represents zero or more repetitions of the input production or symbol.
+    /// </summary>
+    /// <param name="builder">The EBNF production to repeat zero or more times.</param>
+    /// <returns>A new EBNF production representing zero or more repetitions of the input production.</returns>
+    /// <remarks>
+    /// In EBNF, this goes from:
+    /// <code>
+    ///   A = B*;
+    /// </code>
+    /// to:
+    /// <code>
+    ///   A = List;
+    ///   List = B, List;
+    ///   List = "";
+    /// </code>
+    /// </remarks>
+    public static EBNFProduction ZeroOrMore(EBNFProduction builder)
+    {
+        CollectionNonTerminalSymbol listNonTerminal = new CollectionNonTerminalSymbol();
+        HashSet<List<ISymbol>> Symbollists = new();
+
+        // Add list non terminal to the end of each list of symbols
+        foreach (var symbolSequence in builder.symbols)
+        {
+            var newSequence = new List<ISymbol>(symbolSequence)
+            {
+                listNonTerminal
+            };
+            Symbollists.Add(newSequence);
+        }
+
+        EBNFProduction listProduction = new EBNFProduction(Symbollists);
+        // Generate the productions from the ebnf in question
+        listProduction.storeProductions(listNonTerminal);
+        // Add the empty production from the list non terminal to represent zero occurrences
+        listProduction.productions.Add(new Production(listNonTerminal, new List<ISymbol>()));
+        // Add the list non terminal so the future references to this production can use it
+        listProduction.symbols.Add(new List<ISymbol> { listNonTerminal });
+
+        return listProduction;
+    }
+
+    /// <summary>
+    /// Creates a new EBNF production that represents zero or more repetitions of the input symbol. The resulting EBNF production contains the symbol sequence repeated zero or more times.
+    /// </summary>
+    /// <param name="symbol">The symbol to repeat zero or more times.</param>
+    /// <returns>A new EBNF production representing zero or more repetitions of the input symbol.</returns>
+    public static EBNFProduction ZeroOrMore(ISymbol symbol)
+    {
+        return ZeroOrMore(new EBNFProduction([[symbol]]));
+    }
 }

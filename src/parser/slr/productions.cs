@@ -19,15 +19,22 @@ public class Production
         return new LRItem(this);
     }
 
-// TODO
-    //public abstract Node ToNode(Stack<Node> nodeStack);
+    public List<INodal> GetNodes(Stack<INodal> nodeStack)
+    {
+        List<INodal> nodes = new List<INodal>();
+        foreach (var symbol in Symbols)
+        {
+            nodes.Add(symbol is NonTerminalSymbol nonTerminal ? nonTerminal.getNodal(nodeStack) : nodeStack.Pop());
+        }
+        return nodes;
+    }
 }
 
 public class StartProduction : Production
 {
     public StartProduction(NonTerminalSymbol startSymbol)
         : base(
-            new NonTerminalSymbol(NonTerminalSymbol.Type.START),
+            StartSymbol.Instance,
             new List<ISymbol> { startSymbol, new TerminalSymbol(TerminalSymbol.Type.EOF) }
         ) { }
 }

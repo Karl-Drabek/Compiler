@@ -1,3 +1,5 @@
+using Compiler.Parser.AST;
+
 namespace Compiler.Grammar;
 
 
@@ -193,24 +195,37 @@ public struct TerminalSymbol : ISymbol, IEquatable<TerminalSymbol>
 /// Represents a non-terminal symbol in the grammar.
 /// These symbols are used for the creation of productions.
 /// </summary>
-public struct NonTerminalSymbol : ISymbol, IEquatable<NonTerminalSymbol>
+public abstract class NonTerminalSymbol : ISymbol
 {
-    public enum Type
-    {
-        START, // Only Used for the start symbol of the grammar
-    }
+    /// <summary>
+    /// Retrieves the corresponding INodal instance for this non-terminal symbol using the provided node stack.
+    /// </summary>
+    /// <param name="nodeStack">The stack of INodal instances used to retrieve the corresponding node.</param>
+    /// <returns>The INodal instance corresponding to this non-terminal symbol.</returns>
+    internal abstract INodal getNodal(Stack<INodal> nodeStack);
+}
 
-    public readonly Type type { get; }
 /// <summary>
-/// Initializes a new instance of the NonTerminalSymbol struct with the specified type.
+/// Represents a non-terminal symbol that is used to denote a collection in the grammar. Each instance has a unique type identifier.
 /// </summary>
-/// <param name="type">The type of the non-terminal symbol.</param>
-    public NonTerminalSymbol(Type type)
+public class CollectionNonTerminalSymbol : NonTerminalSymbol, IEquatable<CollectionNonTerminalSymbol>
+{
+    public static int GlobalID;
+    public readonly int type;
+    internal override INodal getNodal(Stack<INodal> nodeStack)
     {
-        this.type = type;
+        throw new NotImplementedException();
     }
 
-    public bool Equals(NonTerminalSymbol other)
+    /// <summary>
+    /// Initializes a new instance of the CollectionNonTerminalSymbol class with a unique type identifier.
+    /// </summary>
+    public CollectionNonTerminalSymbol()
+    {
+        type = GlobalID++;
+    }
+
+    public bool Equals(CollectionNonTerminalSymbol other)
     {
         return type == other.type;
     }
@@ -218,7 +233,7 @@ public struct NonTerminalSymbol : ISymbol, IEquatable<NonTerminalSymbol>
 #nullable enable
     public override bool Equals(object? obj)
     {
-        return obj is NonTerminalSymbol other && Equals(other);
+        return obj is CollectionNonTerminalSymbol other && Equals(other);
     }
 
 #nullable disable
@@ -228,13 +243,35 @@ public struct NonTerminalSymbol : ISymbol, IEquatable<NonTerminalSymbol>
         return type.GetHashCode();
     }
 
-    public static bool operator ==(NonTerminalSymbol left, NonTerminalSymbol right)
+    public static bool operator ==(CollectionNonTerminalSymbol left, CollectionNonTerminalSymbol right)
     {
         return left.Equals(right);
     }
 
-    public static bool operator !=(NonTerminalSymbol left, NonTerminalSymbol right)
+    public static bool operator !=(CollectionNonTerminalSymbol left, CollectionNonTerminalSymbol right)
     {
         return !left.Equals(right);
+    }
+}
+
+/// <summary>
+/// Represents the start symbol of the grammar. This symbol is used as the initial non-terminal symbol in the grammar and has a singleton instance.
+/// </summary>
+public class StartSymbol : NonTerminalSymbol
+{
+    private static readonly StartSymbol instance = new StartSymbol();
+    /// <summary>
+    /// Gets the singleton instance of the StartSymbol.
+    /// </summary>
+    public static StartSymbol Instance => instance;
+    /// <summary>
+    /// Retrieves the corresponding INodal instance for the start symbol using the provided node stack.
+    /// </summary>
+    /// <param name="nodeStack">The stack of INodal instances used to retrieve the corresponding node.</param>
+    /// <returns>The INodal instance corresponding to the start symbol.</returns>
+    internal override INodal getNodal(Stack<INodal> nodeStack)
+    {
+        // TODO
+        throw new NotImplementedException();
     }
 }
